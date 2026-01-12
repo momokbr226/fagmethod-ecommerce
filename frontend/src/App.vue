@@ -1,22 +1,20 @@
 <template>
-  <div id="app">
+  <div id="app" class="flex flex-col min-h-screen">
     <Header />
-    <main>
+    <main class="flex-grow">
       <router-view />
     </main>
+    <Footer />
   </div>
 </template>
 
 <script setup>
 import Header from './components/Header.vue'
+import Footer from './components/Footer.vue'
 </script>
 
 <style>
 #app {
   min-height: 100vh;
-}
-
-main {
-  min-height: calc(100vh - 64px);
 }
 </style>
