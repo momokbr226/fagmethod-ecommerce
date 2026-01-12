@@ -12,7 +12,7 @@
                 @keyup.enter="handleSearch"
                 type="text"
                 placeholder="Rechercher des produits..."
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
               >
               <button 
                 @click="handleSearch"
@@ -31,7 +31,7 @@
             <select 
               v-model="filters.category"
               @change="applyFilters"
-              class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
             >
               <option value="">Toutes les catégories</option>
               <option 
@@ -50,7 +50,7 @@
                 @change="applyFilters"
                 type="number"
                 placeholder="Prix min"
-                class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
               >
               <span class="text-gray-500">-</span>
               <input
@@ -58,7 +58,7 @@
                 @change="applyFilters"
                 type="number"
                 placeholder="Prix max"
-                class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-24 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
               >
             </div>
 
@@ -66,7 +66,7 @@
             <select 
               v-model="filters.sortBy"
               @change="applyFilters"
-              class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              class="px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900"
             >
               <option value="created_at">Plus récents</option>
               <option value="name">Nom (A-Z)</option>
