@@ -33,32 +33,32 @@
         >
           <div class="text-center">
             <!-- Category Image -->
-            <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-lg flex items-center justify-center overflow-hidden" :style="{ backgroundColor: category.couleur || '#4F46E5' }">
               <img 
                 v-if="category.image"
                 :src="category.image" 
-                :alt="category.name"
+                :alt="category.nom"
                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
               >
               <div v-else class="w-12 h-12">
-                <svg class="w-full h-full text-indigo-600" fill="none" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2zm-7 7a3 3 0 00-3 3v1a1 1 0 001 1h1a1 1 0 001 1v3a1 1 0 001 1h1a1 1 0 001 1v-3a3 3 0 00-3-3H6a3 3 0 00-3 3z" />
+                <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
             </div>
 
             <!-- Category Info -->
             <h3 class="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-              {{ category.name }}
+              {{ category.nom }}
             </h3>
             <p class="mt-2 text-sm text-gray-500 line-clamp-3">
               {{ category.description }}
             </p>
 
             <!-- Product Count -->
-            <div v-if="category.products" class="mt-4">
+            <div v-if="category.produits_count" class="mt-4">
               <span class="text-sm text-indigo-600 font-medium">
-                {{ category.products.length }} produit{{ category.products.length > 1 ? 's' : '' }}
+                {{ category.produits_count }} produit{{ category.produits_count > 1 ? 's' : '' }}
               </span>
             </div>
           </div>

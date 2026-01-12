@@ -39,7 +39,7 @@
                 :key="category.id"
                 :value="category.id"
               >
-                {{ category.name }}
+                {{ category.nom }}
               </option>
             </select>
 

@@ -45,7 +45,7 @@ export const useOrdersStore = defineStore('orders', {
       this.error = null
       
       try {
-        const response = await axios.post('/api/v1/orders', orderData)
+        const response = await axios.post('/api/v1/commandes', orderData)
         console.log('Order created:', response.data)
         
         return { success: true, data: response.data }
@@ -63,7 +63,7 @@ export const useOrdersStore = defineStore('orders', {
       this.error = null
       
       try {
-        const response = await axios.get(`/api/v1/orders/${orderId}`)
+        const response = await axios.get(`/api/v1/commandes/${orderId}`)
         console.log('Order fetched:', response.data)
         
         return { success: true, data: response.data }
