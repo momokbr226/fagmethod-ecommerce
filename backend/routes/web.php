@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProduitController;
+use App\Http\Controllers\Api\CategorieController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -11,17 +11,17 @@ Route::get('/', function () {
 // API routes accessible from web - ORDER MATTERS!
 Route::prefix('api/v1')->group(function () {
     // Specific routes first
-    Route::get('/products/featured', [ProductController::class, 'featured']);
-    Route::get('/products/search', [ProductController::class, 'search']);
-    Route::get('/products/category/{category}', [ProductController::class, 'byCategory']);
+    Route::get('/products/featured', [ProduitController::class, 'featured']);
+    Route::get('/products/search', [ProduitController::class, 'search']);
+    Route::get('/products/category/{category}', [ProduitController::class, 'byCategory']);
     
     // General routes with parameters last
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{product}', [ProductController::class, 'show']);
+    Route::get('/products', [ProduitController::class, 'index']);
+    Route::get('/products/{product}', [ProduitController::class, 'show']);
     
     // Category routes
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/tree', [CategoryController::class, 'tree']);
-    Route::get('/categories/with-products', [CategoryController::class, 'withProducts']);
-    Route::get('/categories/{category}', [CategoryController::class, 'show']);
+    Route::get('/categories', [CategorieController::class, 'index']);
+    Route::get('/categories/tree', [CategorieController::class, 'index']);
+    Route::get('/categories/with-products', [CategorieController::class, 'index']);
+    Route::get('/categories/{category}', [CategorieController::class, 'show']);
 });
