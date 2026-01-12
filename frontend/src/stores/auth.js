@@ -4,40 +4,48 @@ import axios from 'axios'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    token: localStorage.getItem('token') || null,
-    isAuthenticated: false
+    authToken: localStorage.getItem('token') || null,
+    isAuthenticated: false,
+    loading: false,
+    error: null
   }),
 
   getters: {
     currentUser: (state) => state.user,
-    isLoggedIn: (state) => !!state.token && !!state.user
+    isLoggedIn: (state) => !!state.authToken && !!state.user
   },
 
   actions: {
     async register(credentials) {
+      this.loading = true
+      this.error = null
+      
       try {
         const response = await axios.post('/api/v1/auth/register', credentials)
-        const { user, token } = response.data.data
+        const { utilisateur, token } = response.data
         
-        this.user = user
-        this.token = token
+        this.user = utilisateur
+        this.authToken = token
         this.isAuthenticated = true
         
         localStorage.setItem('token', token)
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         
-        return { success: true }
+        return { success: true, data: response.data }
       } catch (error) {
-        return { 
-          success: false, 
-          error: error.response?.data?.message || 'Erreur lors de l\'inscription' 
-        }
+        this.loading = false
+        this.error = error.response?.data?.message || 'Erreur lors de l\'inscription'
+        return { success: false, error: this.error }
       }
     },
 
     async login(credentials) {
+      this.loading = true
+      this.error = null
+      
       try {
         const response = await axios.post('/api/v1/auth/login', credentials)
+        const { utilisateur, token } = response.data
         const { user, token } = response.data
         
         this.user = user
@@ -63,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
         console.error('Logout error:', error)
       } finally {
         this.user = null
-        this.token = null
+        this.authToken = null
         this.isAuthenticated = false
         
         localStorage.removeItem('token')
@@ -72,14 +80,22 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async fetchProfile() {
-      if (!this.token) return
+      if (!this.authToken) return
+      
+      this.loading = true
       
       try {
         const response = await axios.get('/api/v1/auth/profile')
-        this.user = response.data.user
+        
+        this.user = response.data.utilisateur
+        
+        return { success: true, data: response.data }
       } catch (error) {
-        console.error('Fetch profile error:', error)
-        this.logout()
+        this.loading = false
+        this.error = error.response?.data?.message || 'Erreur lors de la récupération du profil'
+        return { success: false, error: this.error }
+      } finally {
+        this.loading = false
       }
     },
 
