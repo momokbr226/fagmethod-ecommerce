@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', {
     initializeAuth() {
       const token = localStorage.getItem('token')
       if (token) {
-        this.token = token
+        this.authToken = token
         this.isAuthenticated = true
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         this.fetchProfile()
