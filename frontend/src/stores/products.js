@@ -64,7 +64,7 @@ export const useProductsStore = defineStore('products', {
       this.loading = true
       try {
         const response = await axios.get('/api/v1/products/featured', { params: { limit } })
-        this.featuredProducts = response.data.data
+        this.featuredProducts = response.data.produits || response.data.data || []
         
         return { success: true }
       } catch (error) {
@@ -78,8 +78,8 @@ export const useProductsStore = defineStore('products', {
     async fetchCategories() {
       this.loading = true
       try {
-        const response = await axios.get('/api/v1/categories/tree')
-        this.categories = response.data.data
+        const response = await axios.get('/api/v1/categories')
+        this.categories = response.data.categories || response.data.data || []
         
         return { success: true }
       } catch (error) {

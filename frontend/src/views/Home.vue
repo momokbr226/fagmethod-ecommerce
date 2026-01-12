@@ -61,7 +61,7 @@
         </div>
 
         <!-- View All Products -->
-        <div v-if="!productsStore.isLoading && productsStore.featuredProductsList.length > 0" class="text-center mt-12">
+        <div v-if="!productsStore.isLoading && productsStore.featuredProducts.length > 0" class="text-center mt-12">
           <router-link 
             to="/products" 
             class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
