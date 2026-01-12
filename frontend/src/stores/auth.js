@@ -22,9 +22,9 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         const response = await axios.post('/api/v1/auth/register', credentials)
-        const { utilisateur, token } = response.data
+        const { user, token } = response.data
         
-        this.user = utilisateur
+        this.user = user
         this.authToken = token
         this.isAuthenticated = true
         
@@ -85,11 +85,20 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await axios.get('/api/v1/auth/profile')
         
-        this.user = response.data.utilisateur
+        this.user = response.data.user
+        this.isAuthenticated = true
         
         return { success: true, data: response.data }
       } catch (error) {
         this.loading = false
+        // Si erreur 401, l'utilisateur n'est plus authentifié
+        if (error.response?.status === 401) {
+          this.user = null
+          this.authToken = null
+          this.isAuthenticated = false
+          localStorage.removeItem('token')
+          delete axios.defaults.headers.common['Authorization']
+        }
         this.error = error.response?.data?.message || 'Erreur lors de la récupération du profil'
         return { success: false, error: this.error }
       } finally {
