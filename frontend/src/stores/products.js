@@ -95,10 +95,10 @@ export const useProductsStore = defineStore('products', {
     async fetchProductBySlug(slug) {
       this.loading = true
       try {
-        const response = await axios.get(`/api/v1/products/${slug}`)
-        this.currentProduct = response.data.data
+        const response = await axios.get(`/api/v1/produits/${slug}`)
+        this.currentProduct = response.data.produit || response.data.data || response.data
         
-        return { success: true, data: response.data.data }
+        return { success: true, data: this.currentProduct }
       } catch (error) {
         console.error('Fetch product error:', error)
         return { success: false, error: error.response?.data?.message || 'Produit non trouvé' }
@@ -110,15 +110,14 @@ export const useProductsStore = defineStore('products', {
     async fetchProductsByCategory(categorySlug, params = {}) {
       this.loading = true
       try {
-        const response = await axios.get(`/api/v1/products/category/${categorySlug}`, { params })
-        const { data, meta } = response.data
-        
-        this.products = data
+        const response = await axios.get(`/api/v1/produits`, { params: { ...params, categorie_slug: categorySlug } })
+        const paginatedData = response.data.produits || response.data
+        this.products = paginatedData.data || paginatedData || []
         this.pagination = {
-          currentPage: meta.current_page,
-          lastPage: meta.last_page,
-          perPage: meta.per_page,
-          total: meta.total
+          currentPage: paginatedData.current_page || 1,
+          lastPage: paginatedData.last_page || 1,
+          perPage: paginatedData.per_page || 12,
+          total: paginatedData.total || 0
         }
         
         return { success: true }
@@ -133,17 +132,16 @@ export const useProductsStore = defineStore('products', {
     async searchProducts(query, params = {}) {
       this.loading = true
       try {
-        const response = await axios.get('/api/v1/products/search', { 
+        const response = await axios.get('/api/v1/produits/search', { 
           params: { q: query, ...params } 
         })
-        const { data, meta } = response.data
-        
-        this.products = data
+        const paginatedData = response.data.produits || response.data
+        this.products = paginatedData.data || paginatedData || []
         this.pagination = {
-          currentPage: meta.current_page,
-          lastPage: meta.last_page,
-          perPage: meta.per_page,
-          total: meta.total
+          currentPage: paginatedData.current_page || 1,
+          lastPage: paginatedData.last_page || 1,
+          perPage: paginatedData.per_page || 12,
+          total: paginatedData.total || 0
         }
         
         return { success: true }
