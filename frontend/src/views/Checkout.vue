@@ -141,11 +141,11 @@
               <div class="space-y-4 mb-6">
                 <div v-for="item in cartStore.cartItems" :key="item.id" class="flex justify-between">
                   <div class="flex-1">
-                    <h4 class="text-sm font-medium text-gray-900">{{ item.product.name }}</h4>
-                    <p class="text-sm text-gray-500">Quantité: {{ item.quantity }}</p>
+                    <h4 class="text-sm font-medium text-gray-900">{{ item.produit?.nom }}</h4>
+                    <p class="text-sm text-gray-500">Quantité: {{ item.quantite }}</p>
                   </div>
                   <div class="text-sm font-medium text-gray-900">
-                    {{ item.formatted_total }}
+                    {{ item.sous_total }} €
                   </div>
                 </div>
               </div>
