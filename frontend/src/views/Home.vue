@@ -99,16 +99,16 @@
               <img 
                 v-if="category.image"
                 :src="category.image" 
-                :alt="category.name"
+                :alt="category.nom"
                 class="w-16 h-16 mx-auto mb-4 object-cover group-hover:scale-110 transition-transform duration-300"
               >
-              <div v-else class="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <svg class="w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2zm-7 7a3 3 0 00-3 3v1a1 1 0 001 1h1a1 1 0 001 1v3a1 1 0 001 1h1a1 1 0 001 1v-3a3 3 0 00-3-3H6a3 3 0 00-3 3z" />
+              <div v-else class="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center" :style="{ backgroundColor: category.couleur || '#4F46E5' }">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
               <h3 class="mt-4 text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                {{ category.name }}
+                {{ category.nom }}
               </h3>
               <p class="mt-2 text-sm text-gray-500">
                 {{ category.description }}

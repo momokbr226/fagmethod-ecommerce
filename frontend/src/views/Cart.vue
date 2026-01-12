@@ -54,8 +54,8 @@
               <!-- Product Image -->
               <div class="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden">
                 <img 
-                  :src="item.product.image" 
-                  :alt="item.product.name"
+                  :src="item.produit?.image_principale || '/placeholder.png'" 
+                  :alt="item.produit?.nom"
                   class="w-full h-full object-cover"
                 >
               </div>
@@ -64,14 +64,14 @@
               <div class="ml-4 flex-1 flex flex-col">
                 <div>
                   <h4 class="text-lg font-medium text-gray-900">
-                    {{ item.product.name }}
+                    {{ item.produit?.nom }}
                   </h4>
                   <p class="mt-1 text-sm text-gray-500">
-                    SKU: {{ item.product.sku }}
+                    Réf: {{ item.produit?.reference }}
                   </p>
                   <!-- Product Attributes -->
-                  <div v-if="item.product_attributes && Object.keys(item.product_attributes).length > 0" class="mt-2 text-sm text-gray-600">
-                    <span v-for="(value, key) in item.product_attributes" :key="key" class="mr-2">
+                  <div v-if="item.attributs_produit && Object.keys(item.attributs_produit).length > 0" class="mt-2 text-sm text-gray-600">
+                    <span v-for="(value, key) in item.attributs_produit" :key="key" class="mr-2">
                       {{ key }}: {{ value }}
                     </span>
                   </div>
@@ -80,27 +80,27 @@
                 <!-- Price and Quantity -->
                 <div class="flex-1 flex items-end justify-between mt-4">
                   <div class="text-lg font-medium text-gray-900">
-                    {{ item.formatted_price }} × {{ item.quantity }}
+                    {{ item.prix_unitaire }} € × {{ item.quantite }}
                   </div>
                   <div class="ml-4 flex items-center space-x-2">
                     <!-- Quantity Controls -->
                     <div class="flex items-center border border-gray-300 rounded-md">
                       <button 
-                        @click="updateQuantity(item.id, item.quantity - 1)"
-                        :disabled="item.quantity <= 1 || updating"
+                        @click="updateQuantity(item.id, item.quantite - 1)"
+                        :disabled="item.quantite <= 1 || updating"
                         class="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
                       >
                         -
                       </button>
                       <input
-                        :value="item.quantity"
+                        :value="item.quantite"
                         @change="updateQuantity(item.id, $event.target.value)"
                         type="number"
                         min="1"
-                        class="w-16 px-2 py-1 text-center border-0 focus:ring-2 focus:ring-indigo-500"
+                        class="w-16 px-2 py-1 text-center border-0 focus:ring-2 focus:ring-indigo-500 text-gray-900"
                       >
                       <button 
-                        @click="updateQuantity(item.id, item.quantity + 1)"
+                        @click="updateQuantity(item.id, item.quantite + 1)"
                         :disabled="updating"
                         class="px-3 py-1 text-gray-600 hover:text-gray-900 disabled:opacity-50"
                       >
@@ -115,7 +115,7 @@
                       class="text-red-600 hover:text-red-800 disabled:opacity-50"
                     >
                       <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0114 14.414l-4 4a2 2 0 01-2.828 0L7 10.586a2 2 0 00-2.828 0L2.172 5.828A2 2 0 01.414 4l4 4a2 2 0 012.828 0L17 7z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0114 14.414l-4 4a2 2 0 01-2.828 0L7 10.586a2 2 0 00-2.828 0L2.172 5.828A2 2 0 01.414 4l4 4a2 2 0 012.828 0L17 7z" stroke="currentColor" />
                       </svg>
                     </button>
                   </div>
@@ -124,7 +124,7 @@
                 <!-- Item Total -->
                 <div class="mt-2 text-right">
                   <p class="text-lg font-medium text-gray-900">
-                    Total: {{ item.formatted_total }}
+                    Total: {{ item.sous_total }} €
                   </p>
                 </div>
               </div>

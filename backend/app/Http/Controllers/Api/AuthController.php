@@ -3,23 +3,35 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Requests\LoginRequest;
-use App\Models\User;
+use App\Models\Utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(Request $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request->name,
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:utilisateurs,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
+        $user = Utilisateur::create([
+            'nom_complet' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'mot_de_passe' => Hash::make($request->password),
+            'est_actif' => true,
         ]);
         
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -27,28 +39,41 @@ class AuthController extends Controller
         return response()->json([
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->nom_complet,
                 'email' => $user->email,
             ],
             'token' => $token,
         ], 201);
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(Request $request): JsonResponse
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
+        $user = Utilisateur::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->mot_de_passe)) {
             return response()->json([
                 'message' => 'Identifiants invalides',
             ], 401);
         }
 
-        $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->nom_complet,
                 'email' => $user->email,
             ],
             'token' => $token,
@@ -66,22 +91,23 @@ class AuthController extends Controller
 
     public function profile(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['addresses']);
+        $user = $request->user()->load(['adresses']);
 
         return response()->json([
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->nom_complet,
                 'email' => $user->email,
+                'telephone' => $user->telephone,
                 'created_at' => $user->created_at,
-                'addresses' => $user->addresses->map(function ($address) {
+                'adresses' => $user->adresses->map(function ($adresse) {
                     return [
-                        'id' => $address->id,
-                        'type' => $address->type,
-                        'full_name' => $address->full_name,
-                        'full_address' => $address->full_address,
-                        'phone' => $address->phone,
-                        'is_default' => $address->is_default,
+                        'id' => $adresse->id,
+                        'type' => $adresse->type_adresse,
+                        'nom_complet' => $adresse->nom_destinataire,
+                        'adresse_complete' => $adresse->adresse_complete,
+                        'telephone' => $adresse->telephone,
+                        'est_par_defaut' => $adresse->est_par_defaut,
                     ];
                 }),
             ],
@@ -90,19 +116,33 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $request->user()->id,
+            'email' => 'sometimes|string|email|max:255|unique:utilisateurs,email,' . $request->user()->id,
+            'telephone' => 'sometimes|string|max:20',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
         $user = $request->user();
-        $user->update($request->only(['name', 'email']));
+        
+        $updateData = [];
+        if ($request->has('name')) $updateData['nom_complet'] = $request->name;
+        if ($request->has('email')) $updateData['email'] = $request->email;
+        if ($request->has('telephone')) $updateData['telephone'] = $request->telephone;
+        
+        $user->update($updateData);
 
         return response()->json([
             'message' => 'Profil mis à jour avec succès',
             'user' => [
                 'id' => $user->id,
-                'name' => $user->name,
+                'name' => $user->nom_complet,
                 'email' => $user->email,
             ],
         ]);
@@ -110,21 +150,28 @@ class AuthController extends Controller
 
     public function changePassword(Request $request): JsonResponse
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'current_password' => 'required',
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => 'required|string|min:8|confirmed',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
 
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (!Hash::check($request->current_password, $user->mot_de_passe)) {
             return response()->json([
                 'message' => 'Le mot de passe actuel est incorrect',
             ], 422);
         }
 
         $user->update([
-            'password' => Hash::make($request->password),
+            'mot_de_passe' => Hash::make($request->password),
         ]);
 
         return response()->json([
