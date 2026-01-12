@@ -42,12 +42,14 @@ export const useProductsStore = defineStore('products', {
       try {
         const response = await axios.get('/api/v1/produits', { params })
         
-        this.products = response.data.produits || response.data
+        // Handle paginated response from Laravel
+        const paginatedData = response.data.produits || response.data
+        this.products = paginatedData.data || paginatedData || []
         this.pagination = {
-          currentPage: response.data.current_page || 1,
-          lastPage: response.data.last_page || null,
-          totalPages: response.data.total_pages || 1,
-          total: response.data.total || 0
+          currentPage: paginatedData.current_page || 1,
+          lastPage: paginatedData.last_page || 1,
+          totalPages: paginatedData.last_page || 1,
+          total: paginatedData.total || 0
         }
         
         return { success: true, data: response.data }
