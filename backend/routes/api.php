@@ -3,26 +3,32 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\CartController;
-use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\ProduitController;
+use App\Http\Controllers\Api\CategorieController;
+use App\Http\Controllers\Api\PanierController;
+use App\Http\Controllers\Api\CommandeController;
 
 Route::prefix('v1')->group(function () {
     // Public routes - ORDER MATTERS!
     // Specific routes first
-    Route::get('/products/featured', [ProductController::class, 'featured']);
-    Route::get('/products/search', [ProductController::class, 'search']);
-    Route::get('/products/category/{category}', [ProductController::class, 'byCategory']);
+    Route::get('/products/featured', [ProduitController::class, 'featured']);
+    Route::get('/products/search', [ProduitController::class, 'search']);
+    Route::get('/products/category/{category}', [ProduitController::class, 'byCategory']);
     
     // General routes with parameters last
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{product}', [ProductController::class, 'show']);
+    Route::get('/products', [ProduitController::class, 'index']);
+    Route::get('/products/{product}', [ProduitController::class, 'show']);
     
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/tree', [CategoryController::class, 'tree']);
-    Route::get('/categories/with-products', [CategoryController::class, 'withProducts']);
-    Route::get('/categories/{category}', [CategoryController::class, 'show']);
+    // French routes for products
+    Route::get('/produits/featured', [ProduitController::class, 'featured']);
+    Route::get('/produits/search', [ProduitController::class, 'search']);
+    Route::get('/produits', [ProduitController::class, 'index']);
+    Route::get('/produits/{product}', [ProduitController::class, 'show']);
+    
+    Route::get('/categories', [CategorieController::class, 'index']);
+    Route::get('/categories/tree', [CategorieController::class, 'index']);
+    Route::get('/categories/with-products', [CategorieController::class, 'index']);
+    Route::get('/categories/{category}', [CategorieController::class, 'show']);
 
     // Authentication routes
     Route::post('/auth/register', [AuthController::class, 'register']);
@@ -35,18 +41,18 @@ Route::prefix('v1')->group(function () {
         Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
         Route::put('/auth/change-password', [AuthController::class, 'changePassword']);
 
-        // Cart routes
-        Route::get('/cart', [CartController::class, 'index']);
-        Route::post('/cart/add', [CartController::class, 'add']);
-        Route::put('/cart/update/{cartItem}', [CartController::class, 'update']);
-        Route::delete('/cart/remove/{cartItem}', [CartController::class, 'remove']);
-        Route::delete('/cart/clear', [CartController::class, 'clear']);
-        Route::get('/cart/count', [CartController::class, 'count']);
+        // Cart routes (French)
+        Route::get('/paniers', [PanierController::class, 'index']);
+        Route::post('/paniers/ajouter', [PanierController::class, 'addToCart']);
+        Route::put('/paniers/{id}', [PanierController::class, 'updateCartItem']);
+        Route::delete('/paniers/{id}', [PanierController::class, 'removeFromCart']);
+        Route::delete('/paniers/vider', [PanierController::class, 'clearCart']);
+        Route::get('/paniers/count', [PanierController::class, 'getCartCount']);
 
-        // Order routes
-        Route::get('/orders', [OrderController::class, 'index']);
-        Route::post('/orders', [OrderController::class, 'store']);
-        Route::get('/orders/{order}', [OrderController::class, 'show']);
-        Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
+        // Order routes (French)
+        Route::get('/commandes', [CommandeController::class, 'index']);
+        Route::post('/commandes', [CommandeController::class, 'store']);
+        Route::get('/commandes/{id}', [CommandeController::class, 'show']);
+        Route::put('/commandes/{id}/statut', [CommandeController::class, 'updateStatus']);
     });
 });
