@@ -21,7 +21,7 @@
                   <label class="block text-sm font-medium text-gray-700">Sélectionner une adresse</label>
                   <select 
                     v-model="checkoutForm.shipping_address_id"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
                   >
                     <option value="">Choisir une adresse</option>
                     <option value="1">Adresse principale</option>
@@ -58,7 +58,7 @@
                 <div v-if="!sameAsShipping">
                   <select 
                     v-model="checkoutForm.billing_address_id"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
                   >
                     <option value="">Choisir une adresse</option>
                     <option value="1">Adresse principale</option>
@@ -125,7 +125,7 @@
                 v-model="checkoutForm.notes"
                 rows="4"
                 placeholder="Instructions spéciales pour votre commande..."
-                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-gray-900"
               ></textarea>
             </div>
           </div>
