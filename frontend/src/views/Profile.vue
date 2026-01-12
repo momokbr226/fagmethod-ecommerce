@@ -131,16 +131,16 @@
                 <div v-for="order in ordersStore.allOrders" :key="order.id" class="border border-gray-200 rounded-lg p-4">
                   <div class="flex justify-between items-start">
                     <div>
-                      <h4 class="text-lg font-medium text-gray-900">{{ order.order_number }}</h4>
-                      <p class="text-sm text-gray-500">{{ order.created_at }}</p>
-                      <p class="text-sm font-medium text-gray-900">{{ order.formatted_total_amount }}</p>
+                      <h4 class="text-lg font-medium text-gray-900">{{ order.numero_commande }}</h4>
+                      <p class="text-sm text-gray-500">{{ new Date(order.created_at).toLocaleDateString('fr-FR') }}</p>
+                      <p class="text-sm font-medium text-gray-900">{{ order.montant_total }} €</p>
                     </div>
                     <div class="text-right">
                       <span 
-                        :class="getStatusClass(order.status)"
+                        :class="getStatusClass(order.statut)"
                         class="px-2 py-1 text-xs font-medium rounded-full"
                       >
-                        {{ order.status_label }}
+                        {{ getStatusLabel(order.statut) }}
                       </span>
                     </div>
                   </div>
@@ -242,12 +242,26 @@ const profileForm = ref({
 
 const getStatusClass = (status) => {
   const statusClasses = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'processing': 'bg-blue-100 text-blue-800',
-    'completed': 'bg-green-100 text-green-800',
-    'cancelled': 'bg-red-100 text-red-800'
+    'en_attente': 'bg-yellow-100 text-yellow-800',
+    'en_traitement': 'bg-blue-100 text-blue-800',
+    'expediee': 'bg-indigo-100 text-indigo-800',
+    'livree': 'bg-green-100 text-green-800',
+    'annulee': 'bg-red-100 text-red-800',
+    'remboursee': 'bg-gray-100 text-gray-800'
   }
   return statusClasses[status] || 'bg-gray-100 text-gray-800'
+}
+
+const getStatusLabel = (status) => {
+  const statusLabels = {
+    'en_attente': 'En attente',
+    'en_traitement': 'En traitement',
+    'expediee': 'Expédiée',
+    'livree': 'Livrée',
+    'annulee': 'Annulée',
+    'remboursee': 'Remboursée'
+  }
+  return statusLabels[status] || status
 }
 
 const updateProfile = async () => {
@@ -300,7 +314,7 @@ const fetchOrders = async () => {
 onMounted(() => {
   // Set profile form data
   if (authStore.currentUser) {
-    profileForm.value.name = authStore.currentUser.name
+    profileForm.value.name = authStore.currentUser.nom_complet || authStore.currentUser.name
     profileForm.value.email = authStore.currentUser.email
   }
   
