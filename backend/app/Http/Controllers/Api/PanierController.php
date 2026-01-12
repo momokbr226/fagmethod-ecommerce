@@ -132,9 +132,15 @@ class PanierController extends Controller
             ], 401);
         }
 
-        $article = $user->panier()
-            ->articles()
-            ->findOrFail($id);
+        $panier = $user->panier()->first();
+        
+        if (!$panier) {
+            return response()->json([
+                'message' => 'Panier introuvable'
+            ], 404);
+        }
+
+        $article = $panier->articles()->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'quantite' => 'required|integer|min:1',
@@ -161,12 +167,11 @@ class PanierController extends Controller
             'quantite' => $nouvelleQuantite
         ]);
 
-        $panier = $article->panier;
         $panier->updateTotals();
 
         return response()->json([
             'message' => 'Article du panier mis à jour avec succès',
-            'panier' => $panier->fresh()
+            'panier' => $panier->fresh()->load('articles.produit')
         ]);
     }
 
@@ -180,18 +185,23 @@ class PanierController extends Controller
             ], 401);
         }
 
-        $article = $user->panier()
-            ->articles()
-            ->findOrFail($id);
+        $panier = $user->panier()->first();
+        
+        if (!$panier) {
+            return response()->json([
+                'message' => 'Panier introuvable'
+            ], 404);
+        }
+
+        $article = $panier->articles()->findOrFail($id);
 
         $article->delete();
 
-        $panier = $article->panier;
         $panier->updateTotals();
 
         return response()->json([
             'message' => 'Article supprimé du panier avec succès',
-            'panier' => $panier->fresh()
+            'panier' => $panier->fresh()->load('articles.produit')
         ]);
     }
 
