@@ -45,22 +45,20 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         const response = await axios.post('/api/v1/auth/login', credentials)
-        const { utilisateur, token } = response.data
         const { user, token } = response.data
         
         this.user = user
-        this.token = token
+        this.authToken = token
         this.isAuthenticated = true
         
         localStorage.setItem('token', token)
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
         
-        return { success: true }
+        return { success: true, data: response.data }
       } catch (error) {
-        return { 
-          success: false, 
-          error: error.response?.data?.message || 'Identifiants invalides' 
-        }
+        this.loading = false
+        this.error = error.response?.data?.message || 'Identifiants invalides'
+        return { success: false, error: this.error }
       }
     },
 
