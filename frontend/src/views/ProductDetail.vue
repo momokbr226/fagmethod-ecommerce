@@ -179,9 +179,9 @@ const addToCart = async () => {
   
   loading.value = true
   const result = await cartStore.addToCart({
-    product_id: product.value.id,
-    quantity: 1,
-    attributes: {}
+    produit_id: product.value.id,
+    quantite: 1,
+    attributs_produit: {}
   })
   
   loading.value = false
