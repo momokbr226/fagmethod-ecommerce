@@ -15,21 +15,25 @@ export const useOrdersStore = defineStore('orders', {
   },
 
   actions: {
-    async fetchOrders() {
+    async fetchOrders(params = {}) {
       this.loading = true
       this.error = null
       
       try {
-        const response = await axios.get('/api/v1/orders')
-        const ordersData = response.data.data || response.data
+        const response = await axios.get('/api/v1/commandes', { params })
         
-        this.orders = ordersData.data || ordersData
-        console.log('Orders fetched:', this.orders)
+        this.orders = response.data.commandes || response.data
+        this.pagination = {
+          currentPage: response.data.current_page || 1,
+          lastPage: response.data.last_page || null,
+          totalPages: response.data.total_pages || 1,
+          total: response.data.total || 0
+        }
         
-        return { success: true, data: this.orders }
+        return { success: true, data: response.data }
       } catch (error) {
+        this.loading = false
         this.error = error.response?.data?.message || 'Erreur lors de la récupération des commandes'
-        console.error('Fetch orders error:', error)
         return { success: false, error: this.error }
       } finally {
         this.loading = false

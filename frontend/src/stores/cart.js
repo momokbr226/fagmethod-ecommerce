@@ -19,13 +19,13 @@ export const useCartStore = defineStore('cart', {
     async fetchCart() {
       this.loading = true
       try {
-        const response = await axios.get('/api/v1/cart')
+        const response = await axios.get('/api/v1/paniers')
         // The response structure is { data: { items: [...], total: "...", items_count: N } }
         const cartData = response.data.data || response.data
         
-        this.items = cartData.items || []
+        this.items = cartData.articles || []
         this.total = cartData.total || 0
-        this.itemCount = cartData.items_count || 0
+        this.itemCount = cartData.nombre_articles || 0
         
       } catch (error) {
         console.error('Fetch cart error:', error)
@@ -39,21 +39,21 @@ export const useCartStore = defineStore('cart', {
     async addToCart(productData) {
       this.loading = true
       try {
-        const response = await axios.post('/api/v1/cart/add', productData)
+        const response = await axios.post('/api/v1/paniers/ajouter', productData)
         // The response structure is { message: "...", data: { items: [...], total: "...", items_count: N } }
         const cartData = response.data.data || response.data
         
-        this.items = cartData.items || []
+        this.items = cartData.articles || []
         this.total = cartData.total || 0
-        this.itemCount = cartData.items_count || 0
+        this.itemCount = cartData.nombre_articles || 0
         
         return { success: true, message: response.data.message }
       } catch (error) {
         console.error('Add to cart error:', error)
         console.error('Error response:', error.response?.data)
         console.error('Error status:', error.response?.status)
-        const message = error.response?.data?.message || 'Erreur lors de l\'ajout au panier'
-        return { success: false, error: message }
+        this.error = error.response?.data?.message || 'Erreur lors de l\'ajout au panier'
+        return { success: false, error: this.error }
       } finally {
         this.loading = false
       }

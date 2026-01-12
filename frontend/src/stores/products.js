@@ -30,28 +30,31 @@ export const useProductsStore = defineStore('products', {
     featuredProductsList: (state) => state.featuredProducts,
     productById: (state) => (id) => state.products.find(p => p.id === id),
     isLoading: (state) => state.loading,
-    currentFilters: (state) => state.filters
+    currentFilters: (state) => state.filters,
+    getError: (state) => state.error
   },
 
   actions: {
     async fetchProducts(params = {}) {
       this.loading = true
+      this.error = null
+      
       try {
-        const response = await axios.get('/api/v1/products', { params })
-        const { data, meta } = response.data
+        const response = await axios.get('/api/v1/produits', { params })
         
-        this.products = data
+        this.products = response.data.produits || response.data
         this.pagination = {
-          currentPage: meta.current_page,
-          lastPage: meta.last_page,
-          perPage: meta.per_page,
-          total: meta.total
+          currentPage: response.data.current_page || 1,
+          lastPage: response.data.last_page || null,
+          totalPages: response.data.total_pages || 1,
+          total: response.data.total || 0
         }
         
-        return { success: true }
+        return { success: true, data: response.data }
       } catch (error) {
-        console.error('Fetch products error:', error)
-        return { success: false, error: error.response?.data?.message || 'Erreur lors du chargement' }
+        this.loading = false
+        this.error = error.response?.data?.message || 'Erreur lors de la récupération des produits'
+        return { success: false, error: this.error }
       } finally {
         this.loading = false
       }
