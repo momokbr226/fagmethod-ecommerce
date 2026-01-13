@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\MarqueController;
 use App\Http\Controllers\Api\FamilleProduitController;
 use App\Http\Controllers\Api\FournisseurController;
 use App\Http\Controllers\Api\ParametreController;
+use App\Http\Controllers\Api\EspaceClientController;
+use App\Http\Controllers\Api\EspaceFournisseurController;
+use App\Http\Controllers\Api\DashboardAdminController;
 
 Route::prefix('v1')->group(function () {
     // Public routes - ORDER MATTERS!
@@ -62,6 +65,38 @@ Route::prefix('v1')->group(function () {
         Route::get('/commandes/{id}', [CommandeController::class, 'show']);
         Route::put('/commandes/{id}/statut', [CommandeController::class, 'updateStatus']);
         Route::post('/commandes/{id}/annuler', [CommandeController::class, 'annuler']);
+
+        // Espace Client
+        Route::prefix('client')->group(function () {
+            Route::get('/dashboard', [EspaceClientController::class, 'dashboard']);
+            Route::get('/profil', [EspaceClientController::class, 'profil']);
+            Route::put('/profil', [EspaceClientController::class, 'updateProfil']);
+            Route::put('/mot-de-passe', [EspaceClientController::class, 'changerMotDePasse']);
+            Route::get('/commandes', [EspaceClientController::class, 'mesCommandes']);
+            Route::get('/commandes/{id}', [EspaceClientController::class, 'detailCommande']);
+        });
+
+        // Espace Fournisseur - Accessible aux fournisseurs uniquement
+        Route::middleware(['role:fournisseur'])->prefix('fournisseur')->group(function () {
+            Route::get('/dashboard', [EspaceFournisseurController::class, 'dashboard']);
+            Route::get('/produits', [EspaceFournisseurController::class, 'mesProduits']);
+            Route::get('/produits/stock-faible', [EspaceFournisseurController::class, 'produitsStockFaible']);
+            Route::get('/produits/rupture', [EspaceFournisseurController::class, 'produitsRupture']);
+            Route::put('/produits/{id}/stock', [EspaceFournisseurController::class, 'updateStock']);
+            Route::get('/commandes', [EspaceFournisseurController::class, 'commandesProduits']);
+            Route::get('/statistiques/ventes', [EspaceFournisseurController::class, 'statistiquesVentes']);
+        });
+
+        // Tableau de bord Admin - Accessible aux admins uniquement
+        Route::middleware(['role:admin'])->prefix('admin')->group(function () {
+            Route::get('/dashboard', [DashboardAdminController::class, 'index']);
+            Route::get('/statistiques/ventes', [DashboardAdminController::class, 'statistiquesVentes']);
+            Route::get('/statistiques/catalogue', [DashboardAdminController::class, 'statistiquesCatalogue']);
+            Route::get('/alertes', [DashboardAdminController::class, 'alertes']);
+            Route::get('/utilisateurs', [DashboardAdminController::class, 'utilisateurs']);
+            Route::get('/produits', [DashboardAdminController::class, 'produits']);
+            Route::get('/commandes', [DashboardAdminController::class, 'commandes']);
+        });
 
         // Référentiels métier - Accessible aux admins et fournisseurs
         Route::middleware(['role:admin,fournisseur'])->group(function () {
