@@ -229,6 +229,9 @@ class EspaceFournisseurController extends Controller
     {
         $user = $request->user();
 
+        // Log des données reçues pour debug
+        \Log::info('Données reçues pour création produit:', $request->all());
+
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string|max:255',
             'reference' => 'required|string|max:100|unique:produits,reference',
@@ -241,9 +244,9 @@ class EspaceFournisseurController extends Controller
             'categorie_id' => 'nullable|exists:categories,id',
             'marque_id' => 'nullable|exists:marques,id',
             'famille_id' => 'nullable|exists:familles_produits,id',
-            'est_visible' => 'boolean',
-            'est_vedette' => 'boolean',
-            'est_nouveau' => 'boolean',
+            'est_visible' => 'nullable|in:0,1,true,false',
+            'est_vedette' => 'nullable|in:0,1,true,false',
+            'est_nouveau' => 'nullable|in:0,1,true,false',
             'caracteristiques' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
@@ -259,6 +262,11 @@ class EspaceFournisseurController extends Controller
         $data['slug'] = Str::slug($data['nom']);
         $data['fournisseur_id'] = $user->id;
         $data['seuil_alerte_stock'] = $data['seuil_alerte_stock'] ?? 5;
+
+        // Convertir les booléens
+        $data['est_visible'] = isset($data['est_visible']) ? in_array($data['est_visible'], ['1', 'true', true], true) : true;
+        $data['est_vedette'] = isset($data['est_vedette']) ? in_array($data['est_vedette'], ['1', 'true', true], true) : false;
+        $data['est_nouveau'] = isset($data['est_nouveau']) ? in_array($data['est_nouveau'], ['1', 'true', true], true) : false;
 
         // Gérer l'upload d'image
         if ($request->hasFile('image')) {
@@ -305,9 +313,9 @@ class EspaceFournisseurController extends Controller
             'categorie_id' => 'nullable|exists:categories,id',
             'marque_id' => 'nullable|exists:marques,id',
             'famille_id' => 'nullable|exists:familles_produits,id',
-            'est_visible' => 'boolean',
-            'est_vedette' => 'boolean',
-            'est_nouveau' => 'boolean',
+            'est_visible' => 'nullable|in:0,1,true,false',
+            'est_vedette' => 'nullable|in:0,1,true,false',
+            'est_nouveau' => 'nullable|in:0,1,true,false',
             'caracteristiques' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);

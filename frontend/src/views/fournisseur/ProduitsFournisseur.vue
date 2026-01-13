@@ -562,13 +562,25 @@ const saveProduct = async () => {
     if (selectedImageFile.value) {
       data = new FormData()
       Object.keys(productForm.value).forEach(key => {
-        if (productForm.value[key] !== null && productForm.value[key] !== '') {
-          data.append(key, productForm.value[key])
+        let value = productForm.value[key]
+        if (value !== null && value !== '') {
+          // Convertir les booléens en string pour FormData
+          if (typeof value === 'boolean') {
+            value = value ? '1' : '0'
+          }
+          data.append(key, value)
         }
       })
       data.append('image', selectedImageFile.value)
     } else {
-      data = productForm.value
+      // Nettoyer les données pour l'envoi JSON
+      data = { ...productForm.value }
+      // Supprimer les champs vides
+      Object.keys(data).forEach(key => {
+        if (data[key] === '' || data[key] === null) {
+          delete data[key]
+        }
+      })
     }
     
     if (editingProduct.value) {
@@ -585,7 +597,14 @@ const saveProduct = async () => {
     closeModal()
   } catch (error) {
     console.error('Erreur lors de la sauvegarde:', error)
-    alert('Erreur lors de la sauvegarde du produit')
+    
+    if (error.response?.status === 422) {
+      const errors = error.response.data.erreurs || {}
+      const errorMessages = Object.values(errors).flat().join('\n')
+      alert(`Erreurs de validation:\n${errorMessages}`)
+    } else {
+      alert('Erreur lors de la sauvegarde du produit')
+    }
   } finally {
     saving.value = false
   }
