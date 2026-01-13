@@ -80,6 +80,9 @@ Route::prefix('v1')->group(function () {
         Route::middleware(['role:fournisseur'])->prefix('fournisseur')->group(function () {
             Route::get('/dashboard', [EspaceFournisseurController::class, 'dashboard']);
             Route::get('/produits', [EspaceFournisseurController::class, 'mesProduits']);
+            Route::post('/produits', [EspaceFournisseurController::class, 'creerProduit']);
+            Route::put('/produits/{id}', [EspaceFournisseurController::class, 'modifierProduit']);
+            Route::delete('/produits/{id}', [EspaceFournisseurController::class, 'supprimerProduit']);
             Route::get('/produits/stock-faible', [EspaceFournisseurController::class, 'produitsStockFaible']);
             Route::get('/produits/rupture', [EspaceFournisseurController::class, 'produitsRupture']);
             Route::put('/produits/{id}/stock', [EspaceFournisseurController::class, 'updateStock']);

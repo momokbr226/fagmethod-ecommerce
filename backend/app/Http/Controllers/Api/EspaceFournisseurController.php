@@ -9,6 +9,8 @@ use App\Models\ArticleCommande;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class EspaceFournisseurController extends Controller
 {
@@ -217,6 +219,142 @@ class EspaceFournisseurController extends Controller
             'periode' => $periode,
             'statistiques' => $statistiques,
             'ventes_par_produit' => $ventesParProduit,
+        ]);
+    }
+
+    /**
+     * Créer un nouveau produit
+     */
+    public function creerProduit(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'nom' => 'required|string|max:255',
+            'reference' => 'required|string|max:100|unique:produits,reference',
+            'description' => 'nullable|string',
+            'description_courte' => 'nullable|string|max:500',
+            'prix' => 'required|numeric|min:0',
+            'prix_promo' => 'nullable|numeric|min:0',
+            'quantite_stock' => 'required|integer|min:0',
+            'seuil_alerte_stock' => 'nullable|integer|min:0',
+            'categorie_id' => 'nullable|exists:categories,id',
+            'marque_id' => 'nullable|exists:marques,id',
+            'famille_id' => 'nullable|exists:familles_produits,id',
+            'est_visible' => 'boolean',
+            'est_vedette' => 'boolean',
+            'est_nouveau' => 'boolean',
+            'caracteristiques' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
+        $data = $request->all();
+        $data['slug'] = Str::slug($data['nom']);
+        $data['fournisseur_id'] = $user->id;
+        $data['seuil_alerte_stock'] = $data['seuil_alerte_stock'] ?? 5;
+
+        // Déterminer le statut du stock
+        if ($data['quantite_stock'] == 0) {
+            $data['statut_stock'] = 'rupture';
+        } elseif ($data['quantite_stock'] <= $data['seuil_alerte_stock']) {
+            $data['statut_stock'] = 'stock_faible';
+        } else {
+            $data['statut_stock'] = 'en_stock';
+        }
+
+        $produit = Produit::create($data);
+
+        return response()->json([
+            'message' => 'Produit créé avec succès',
+            'produit' => $produit->load(['categorie', 'marque', 'famille'])
+        ], 201);
+    }
+
+    /**
+     * Modifier un produit existant
+     */
+    public function modifierProduit(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $produit = Produit::where('fournisseur_id', $user->id)->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'nom' => 'required|string|max:255',
+            'reference' => 'required|string|max:100|unique:produits,reference,' . $id,
+            'description' => 'nullable|string',
+            'description_courte' => 'nullable|string|max:500',
+            'prix' => 'required|numeric|min:0',
+            'prix_promo' => 'nullable|numeric|min:0',
+            'quantite_stock' => 'required|integer|min:0',
+            'seuil_alerte_stock' => 'nullable|integer|min:0',
+            'categorie_id' => 'nullable|exists:categories,id',
+            'marque_id' => 'nullable|exists:marques,id',
+            'famille_id' => 'nullable|exists:familles_produits,id',
+            'est_visible' => 'boolean',
+            'est_vedette' => 'boolean',
+            'est_nouveau' => 'boolean',
+            'caracteristiques' => 'nullable|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
+        $data = $request->all();
+        if ($request->has('nom')) {
+            $data['slug'] = Str::slug($request->nom);
+        }
+
+        // Mettre à jour le statut du stock si nécessaire
+        if ($request->has('quantite_stock')) {
+            $seuil = $request->get('seuil_alerte_stock', $produit->seuil_alerte_stock);
+            if ($data['quantite_stock'] == 0) {
+                $data['statut_stock'] = 'rupture';
+            } elseif ($data['quantite_stock'] <= $seuil) {
+                $data['statut_stock'] = 'stock_faible';
+            } else {
+                $data['statut_stock'] = 'en_stock';
+            }
+        }
+
+        $produit->update($data);
+
+        return response()->json([
+            'message' => 'Produit modifié avec succès',
+            'produit' => $produit->load(['categorie', 'marque', 'famille'])
+        ]);
+    }
+
+    /**
+     * Supprimer un produit
+     */
+    public function supprimerProduit(Request $request, $id): JsonResponse
+    {
+        $user = $request->user();
+        $produit = Produit::where('fournisseur_id', $user->id)->findOrFail($id);
+
+        // Vérifier si le produit a des commandes associées
+        $hasOrders = $produit->articlesCommande()->exists();
+        
+        if ($hasOrders) {
+            return response()->json([
+                'message' => 'Impossible de supprimer ce produit car il est associé à des commandes. Vous pouvez le masquer à la place.'
+            ], 400);
+        }
+
+        $produit->delete();
+
+        return response()->json([
+            'message' => 'Produit supprimé avec succès'
         ]);
     }
 }

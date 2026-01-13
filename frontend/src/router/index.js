@@ -14,6 +14,7 @@ import Checkout from '../views/Checkout.vue'
 import DashboardClient from '../views/client/DashboardClient.vue'
 import ProfilClient from '../views/client/ProfilClient.vue'
 import DashboardFournisseur from '../views/fournisseur/DashboardFournisseur.vue'
+import ProduitsFournisseur from '../views/fournisseur/ProduitsFournisseur.vue'
 import DashboardAdmin from '../views/admin/DashboardAdmin.vue'
 
 const routes = [
@@ -99,6 +100,11 @@ const routes = [
         path: 'dashboard',
         name: 'FournisseurDashboard',
         component: DashboardFournisseur
+      },
+      {
+        path: 'produits',
+        name: 'FournisseurProduits',
+        component: ProduitsFournisseur
       }
     ]
   },
@@ -119,7 +125,15 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    // Si l'utilisateur utilise les boutons précédent/suivant du navigateur
+    if (savedPosition) {
+      return savedPosition
+    }
+    // Sinon, toujours remonter en haut de la page
+    return { top: 0, behavior: 'smooth' }
+  }
 })
 
 // Navigation guards
