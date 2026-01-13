@@ -1,29 +1,7 @@
 <template>
   <header class="bg-white shadow-md sticky top-0 z-50">
     <!-- Top Bar -->
-    <div class="bg-indigo-600 text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-10 text-sm">
-          <div class="flex items-center space-x-4">
-            <span class="flex items-center">
-              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-              +33 1 23 45 67 89
-            </span>
-            <span class="flex items-center">
-              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              contact@fagmethod.com
-            </span>
-          </div>
-          <div class="hidden sm:flex items-center space-x-4">
-            <span>Livraison gratuite dès 50€</span>
-          </div>
-        </div>
-      </div>
-    </div>
+   
 
     <!-- Main Navigation -->
     <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,10 +9,9 @@
         <!-- Logo -->
         <div class="flex-shrink-0">
           <router-link to="/" class="flex items-center">
-            <svg class="h-10 w-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
-            </svg>
-            <span class="ml-2 text-2xl font-bold text-gray-900">FAGMETHOD</span>
+            <div class="bg-green-700 px-3 py-2 rounded">
+              <span class="text-yellow-400 text-2xl font-bold" style="font-family: Arial, sans-serif; letter-spacing: 2px;">FAGMETHOD</span>
+            </div>
           </router-link>
         </div>
 
@@ -45,7 +22,7 @@
               <input
                 type="text"
                 placeholder="Rechercher des produits..."
-                class="w-full px-4 py-2 pl-10 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="w-full px-4 py-2 pl-10 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
               >
               <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -59,7 +36,7 @@
           <!-- Cart -->
           <router-link 
             to="/cart" 
-            class="relative p-2 text-gray-700 hover:text-indigo-600 transition-colors"
+            class="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
           >
             <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -76,13 +53,13 @@
           <div class="relative" v-if="!authStore.isLoggedIn">
             <router-link 
               to="/login" 
-              class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              class="text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Connexion
             </router-link>
             <router-link 
               to="/register" 
-              class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+              class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
             >
               Inscription
             </router-link>
@@ -91,10 +68,10 @@
           <div class="relative" v-else>
             <button 
               @click="toggleUserMenu" 
-              class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              class="flex items-center space-x-2 text-gray-700 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
-              <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                <svg class="h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
@@ -111,7 +88,7 @@
             >
               <router-link 
                 to="/profile" 
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors"
+                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors"
                 @click="userMenuOpen = false"
               >
                 <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,7 +98,7 @@
               </router-link>
               <router-link 
                 to="/profile?tab=orders" 
-                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 transition-colors"
+                class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors"
                 @click="userMenuOpen = false"
               >
                 <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +122,7 @@
           <!-- Mobile menu button -->
           <button 
             @click="toggleMobileMenu" 
-            class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-gray-100 transition-colors"
+            class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition-colors"
           >
             <span class="sr-only">Menu</span>
             <svg v-if="!mobileMenuOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
