@@ -72,8 +72,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'type_profil' => $user->type_profil,
                 'raison_sociale' => $user->raison_sociale,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'roles' => $user->getRoleNames()->toArray(),
+                'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
             ],
             'token' => $token,
         ], 201);
@@ -111,8 +111,8 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'type_profil' => $user->type_profil,
                 'raison_sociale' => $user->raison_sociale,
-                'roles' => $user->getRoleNames(),
-                'permissions' => $user->getAllPermissions()->pluck('name'),
+                'roles' => $user->getRoleNames()->toArray(),
+                'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
             ],
             'token' => $token,
         ]);
@@ -134,9 +134,14 @@ class AuthController extends Controller
         return response()->json([
             'user' => [
                 'id' => $user->id,
+                'nom_complet' => $user->nom_complet,
                 'name' => $user->nom_complet,
                 'email' => $user->email,
                 'telephone' => $user->telephone,
+                'type_profil' => $user->type_profil,
+                'raison_sociale' => $user->raison_sociale,
+                'roles' => $user->getRoleNames()->toArray(),
+                'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
                 'created_at' => $user->created_at,
                 'adresses' => $user->adresses->map(function ($adresse) {
                     return [
