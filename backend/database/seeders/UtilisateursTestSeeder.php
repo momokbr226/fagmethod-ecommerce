@@ -74,7 +74,7 @@ class UtilisateursTestSeeder extends Seeder
             $client->assignRole('client');
         }
 
-        // Créer un client personne morale
+        // Créer un fournisseur personne morale
         $entreprise = Utilisateur::create([
             'nom_complet' => 'Entreprise Tech Solutions',
             'email' => 'contact@techsolutions.fr',
@@ -92,9 +92,9 @@ class UtilisateursTestSeeder extends Seeder
             'forme_juridique' => 'SAS',
             'nom_contact' => 'Durand',
             'prenom_contact' => 'Thomas',
-            'fonction_contact' => 'Directeur Achats',
+            'fonction_contact' => 'Directeur Commercial',
         ]);
-        $entreprise->assignRole('client');
+        $entreprise->assignRole('fournisseur');
 
         // Créer des fournisseurs
         $fournisseurs = [
@@ -132,7 +132,7 @@ class UtilisateursTestSeeder extends Seeder
 
         $this->command->info('✅ Utilisateurs de test créés avec succès!');
         $this->command->info('   - 1 Admin: admin@fagmethod.com / password');
-        $this->command->info('   - 5 Clients (4 physiques + 1 morale)');
-        $this->command->info('   - 2 Fournisseurs');
+        $this->command->info('   - 4 Clients (tous physiques)');
+        $this->command->info('   - 3 Fournisseurs (contact@techsolutions.fr, contact@techdistrib.fr, ventes@electroplus.fr)');
     }
 }
