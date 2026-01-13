@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class Utilisateur extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $table = 'utilisateurs';
 
@@ -27,7 +28,16 @@ class Utilisateur extends Authenticatable
         'est_actif',
         'photo_profil',
         'preferences',
-        'notes'
+        'notes',
+        // Champs de profil
+        'type_profil',
+        'raison_sociale',
+        'siret',
+        'numero_tva',
+        'forme_juridique',
+        'nom_contact',
+        'prenom_contact',
+        'fonction_contact'
     ];
 
     protected $hidden = [
@@ -106,5 +116,56 @@ class Utilisateur extends Authenticatable
     public function getAuthIdentifierName()
     {
         return 'id';
+    }
+
+    /**
+     * Vérifie si l'utilisateur est une personne morale
+     */
+    public function estPersonneMorale(): bool
+    {
+        return $this->type_profil === 'morale';
+    }
+
+    /**
+     * Vérifie si l'utilisateur est une personne physique
+     */
+    public function estPersonnePhysique(): bool
+    {
+        return $this->type_profil === 'physique';
+    }
+
+    /**
+     * Vérifie si l'utilisateur est un administrateur
+     */
+    public function estAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Vérifie si l'utilisateur est un client
+     */
+    public function estClient(): bool
+    {
+        return $this->hasRole('client');
+    }
+
+    /**
+     * Vérifie si l'utilisateur est un fournisseur
+     */
+    public function estFournisseur(): bool
+    {
+        return $this->hasRole('fournisseur');
+    }
+
+    /**
+     * Retourne le nom d'affichage selon le type de profil
+     */
+    public function getNomAffichageAttribute(): string
+    {
+        if ($this->estPersonneMorale()) {
+            return $this->raison_sociale ?? $this->nom_complet;
+        }
+        return $this->nom_complet;
     }
 }

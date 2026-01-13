@@ -18,6 +18,16 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:utilisateurs,email',
             'password' => 'required|string|min:8|confirmed',
+            'type_profil' => 'nullable|in:physique,morale',
+            // Champs pour personne morale
+            'raison_sociale' => 'required_if:type_profil,morale|string|max:255',
+            'siret' => 'nullable|string|max:14',
+            'numero_tva' => 'nullable|string|max:20',
+            'forme_juridique' => 'nullable|string|max:100',
+            'nom_contact' => 'nullable|string|max:255',
+            'prenom_contact' => 'nullable|string|max:255',
+            'fonction_contact' => 'nullable|string|max:100',
+            'telephone' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
@@ -27,20 +37,43 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = Utilisateur::create([
+        $userData = [
             'nom_complet' => $request->name,
             'email' => $request->email,
             'mot_de_passe' => Hash::make($request->password),
             'est_actif' => true,
-        ]);
+            'type_profil' => $request->type_profil ?? 'physique',
+            'telephone' => $request->telephone,
+        ];
+
+        // Ajouter les champs pour personne morale si applicable
+        if ($request->type_profil === 'morale') {
+            $userData['raison_sociale'] = $request->raison_sociale;
+            $userData['siret'] = $request->siret;
+            $userData['numero_tva'] = $request->numero_tva;
+            $userData['forme_juridique'] = $request->forme_juridique;
+            $userData['nom_contact'] = $request->nom_contact;
+            $userData['prenom_contact'] = $request->prenom_contact;
+            $userData['fonction_contact'] = $request->fonction_contact;
+        }
+
+        $user = Utilisateur::create($userData);
+        
+        // Assigner le rôle client par défaut
+        $user->assignRole('client');
         
         $token = $user->createToken('auth_token')->plainTextToken;
         
         return response()->json([
             'user' => [
                 'id' => $user->id,
+                'nom_complet' => $user->nom_complet,
                 'name' => $user->nom_complet,
                 'email' => $user->email,
+                'type_profil' => $user->type_profil,
+                'raison_sociale' => $user->raison_sociale,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ],
             'token' => $token,
         ], 201);
@@ -73,8 +106,13 @@ class AuthController extends Controller
         return response()->json([
             'user' => [
                 'id' => $user->id,
+                'nom_complet' => $user->nom_complet,
                 'name' => $user->nom_complet,
                 'email' => $user->email,
+                'type_profil' => $user->type_profil,
+                'raison_sociale' => $user->raison_sociale,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getAllPermissions()->pluck('name'),
             ],
             'token' => $token,
         ]);
