@@ -129,7 +129,7 @@ class CategorieController extends Controller
             ->withCount(['produits' => function ($query) {
                 $query->where('est_vedette', true);
             }])
-            ->orderBy('ordre', 'asc')
+            ->orderBy('ordre_affichage', 'asc')
             ->get();
 
         return response()->json([

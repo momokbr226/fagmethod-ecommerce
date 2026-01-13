@@ -17,16 +17,17 @@ class Categorie extends Model
         'slug',
         'description',
         'image',
-        'parent_id',
-        'ordre',
+        'couleur',
+        'categorie_parente_id',
+        'ordre_affichage',
         'est_active',
-        'meta_donnees'
+        'meta_description',
+        'meta_titre'
     ];
 
     protected $casts = [
         'est_active' => 'boolean',
-        'ordre' => 'integer',
-        'meta_donnees' => 'array',
+        'ordre_affichage' => 'integer',
     ];
 
     public function produits()
@@ -36,12 +37,12 @@ class Categorie extends Model
 
     public function parent()
     {
-        return $this->belongsTo(Categorie::class, 'parent_id');
+        return $this->belongsTo(Categorie::class, 'categorie_parente_id');
     }
 
     public function enfants()
     {
-        return $this->hasMany(Categorie::class, 'parent_id');
+        return $this->hasMany(Categorie::class, 'categorie_parente_id');
     }
 
     public function scopeActive($query)
@@ -51,11 +52,11 @@ class Categorie extends Model
 
     public function scopeOrderByOrder($query)
     {
-        return $query->orderBy('ordre', 'asc')->orderBy('nom', 'asc');
+        return $query->orderBy('ordre_affichage', 'asc')->orderBy('nom', 'asc');
     }
 
     public function scopeRacine($query)
     {
-        return $query->whereNull('parent_id');
+        return $query->whereNull('categorie_parente_id');
     }
 }
