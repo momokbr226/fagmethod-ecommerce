@@ -12,7 +12,13 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     currentUser: (state) => state.user,
-    isLoggedIn: (state) => !!state.authToken && !!state.user
+    isLoggedIn: (state) => !!state.authToken && !!state.user,
+    userRoles: (state) => state.user?.roles || [],
+    userPermissions: (state) => state.user?.permissions || [],
+    isAdmin: (state) => state.user?.roles?.includes('admin') || false,
+    isClient: (state) => state.user?.roles?.includes('client') || false,
+    isFournisseur: (state) => state.user?.roles?.includes('fournisseur') || false,
+    isPersonneMorale: (state) => state.user?.type_profil === 'morale'
   },
 
   actions: {
