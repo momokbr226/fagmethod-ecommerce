@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import Home from '../views/Home.vue'
 import Products from '../views/Products.vue'
 import ProductDetail from '../views/ProductDetail.vue'
@@ -8,6 +9,12 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Profile from '../views/Profile.vue'
 import Checkout from '../views/Checkout.vue'
+
+// Espaces utilisateurs
+import DashboardClient from '../views/client/DashboardClient.vue'
+import ProfilClient from '../views/client/ProfilClient.vue'
+import DashboardFournisseur from '../views/fournisseur/DashboardFournisseur.vue'
+import DashboardAdmin from '../views/admin/DashboardAdmin.vue'
 
 const routes = [
   {
@@ -63,12 +70,89 @@ const routes = [
     name: 'Checkout',
     component: Checkout,
     meta: { requiresAuth: true }
+  },
+  
+  // Routes Espace Client
+  {
+    path: '/client',
+    meta: { requiresAuth: true, requiresRole: 'client' },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'ClientDashboard',
+        component: DashboardClient
+      },
+      {
+        path: 'profil',
+        name: 'ClientProfil',
+        component: ProfilClient
+      }
+    ]
+  },
+
+  // Routes Espace Fournisseur
+  {
+    path: '/fournisseur',
+    meta: { requiresAuth: true, requiresRole: 'fournisseur' },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'FournisseurDashboard',
+        component: DashboardFournisseur
+      }
+    ]
+  },
+
+  // Routes Espace Admin
+  {
+    path: '/admin',
+    meta: { requiresAuth: true, requiresRole: 'admin' },
+    children: [
+      {
+        path: 'dashboard',
+        name: 'AdminDashboard',
+        component: DashboardAdmin
+      }
+    ]
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// Navigation guards
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  // Vérifier si la route nécessite une authentification
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+    return
+  }
+  
+  // Vérifier le rôle requis
+  if (to.meta.requiresRole) {
+    const requiredRole = to.meta.requiresRole
+    const userRoles = authStore.userRoles
+    
+    if (!userRoles.includes(requiredRole)) {
+      // Rediriger vers le dashboard approprié selon le rôle
+      if (authStore.isAdmin) {
+        next({ name: 'AdminDashboard' })
+      } else if (authStore.isFournisseur) {
+        next({ name: 'FournisseurDashboard' })
+      } else if (authStore.isClient) {
+        next({ name: 'ClientDashboard' })
+      } else {
+        next({ name: 'Home' })
+      }
+      return
+    }
+  }
+  
+  next()
 })
 
 export default router
