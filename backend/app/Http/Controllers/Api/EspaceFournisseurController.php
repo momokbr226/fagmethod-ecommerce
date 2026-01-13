@@ -252,9 +252,14 @@ class EspaceFournisseurController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Debug temporaire
+            $errors = $validator->errors();
+            \Log::error('Erreurs validation:', $errors->toArray());
+            
             return response()->json([
                 'message' => 'Erreur de validation',
-                'erreurs' => $validator->errors()
+                'erreurs' => $errors,
+                'debug_data' => $request->all()
             ], 422);
         }
 
@@ -321,9 +326,14 @@ class EspaceFournisseurController extends Controller
         ]);
 
         if ($validator->fails()) {
+            // Debug temporaire
+            $errors = $validator->errors();
+            \Log::error('Erreurs validation:', $errors->toArray());
+            
             return response()->json([
                 'message' => 'Erreur de validation',
-                'erreurs' => $validator->errors()
+                'erreurs' => $errors,
+                'debug_data' => $request->all()
             ], 422);
         }
 

@@ -600,8 +600,13 @@ const saveProduct = async () => {
     
     if (error.response?.status === 422) {
       const errors = error.response.data.erreurs || {}
+      const debugData = error.response.data.debug_data || {}
       const errorMessages = Object.values(errors).flat().join('\n')
-      alert(`Erreurs de validation:\n${errorMessages}`)
+      
+      console.error('Debug données:', debugData)
+      console.error('Erreurs validation:', errors)
+      
+      alert(`Erreurs de validation:\n${errorMessages}\n\n(Vérifiez la console pour les détails)`)
     } else {
       alert('Erreur lors de la sauvegarde du produit')
     }
