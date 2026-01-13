@@ -264,6 +264,37 @@
             ></textarea>
           </div>
 
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Image principale</label>
+            <div class="flex items-center space-x-4">
+              <input
+                type="file"
+                ref="imageInput"
+                @change="handleImageUpload"
+                accept="image/*"
+                class="hidden"
+              >
+              <button
+                type="button"
+                @click="$refs.imageInput.click()"
+                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-purple-500"
+              >
+                Choisir une image
+              </button>
+              <span v-if="selectedImageName" class="text-sm text-gray-600">{{ selectedImageName }}</span>
+              <div v-if="imagePreview" class="relative">
+                <img :src="imagePreview" alt="Aperçu" class="h-16 w-16 object-cover rounded-lg">
+                <button
+                  type="button"
+                  @click="removeImage"
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Prix *</label>
@@ -365,8 +396,14 @@ const productForm = ref({
   quantite_stock: '',
   seuil_alerte_stock: 5,
   est_visible: true,
-  est_vedette: false
+  est_vedette: false,
+  image_principale: ''
 })
+
+// Gestion d'image
+const selectedImageName = ref('')
+const imagePreview = ref('')
+const selectedImageFile = ref(null)
 
 // Produits filtrés
 const filteredProducts = computed(() => {
@@ -461,9 +498,38 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
+const handleImageUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    selectedImageFile.value = file
+    selectedImageName.value = file.name
+    
+    // Créer un aperçu de l'image
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const removeImage = () => {
+  selectedImageFile.value = null
+  selectedImageName.value = ''
+  imagePreview.value = ''
+  productForm.value.image_principale = ''
+}
+
 const editProduct = (product) => {
   editingProduct.value = product
   productForm.value = { ...product }
+  
+  // Gérer l'image existante
+  if (product.image_principale) {
+    imagePreview.value = product.image_principale
+    selectedImageName.value = 'Image existante'
+  }
+  
   showAddModal.value = true
 }
 
@@ -478,18 +544,41 @@ const closeModal = () => {
     quantite_stock: '',
     seuil_alerte_stock: 5,
     est_visible: true,
-    est_vedette: false
+    est_vedette: false,
+    image_principale: ''
   }
+  // Réinitialiser les variables d'image
+  selectedImageFile.value = null
+  selectedImageName.value = ''
+  imagePreview.value = ''
 }
 
 const saveProduct = async () => {
   try {
     saving.value = true
     
-    if (editingProduct.value) {
-      await axios.put(`/api/v1/fournisseur/produits/${editingProduct.value.id}`, productForm.value)
+    // Préparer les données avec FormData si une image est sélectionnée
+    let data
+    if (selectedImageFile.value) {
+      data = new FormData()
+      Object.keys(productForm.value).forEach(key => {
+        if (productForm.value[key] !== null && productForm.value[key] !== '') {
+          data.append(key, productForm.value[key])
+        }
+      })
+      data.append('image', selectedImageFile.value)
     } else {
-      await axios.post('/api/v1/fournisseur/produits', productForm.value)
+      data = productForm.value
+    }
+    
+    if (editingProduct.value) {
+      await axios.put(`/api/v1/fournisseur/produits/${editingProduct.value.id}`, data, {
+        headers: selectedImageFile.value ? { 'Content-Type': 'multipart/form-data' } : {}
+      })
+    } else {
+      await axios.post('/api/v1/fournisseur/produits', data, {
+        headers: selectedImageFile.value ? { 'Content-Type': 'multipart/form-data' } : {}
+      })
     }
     
     await fetchProducts()

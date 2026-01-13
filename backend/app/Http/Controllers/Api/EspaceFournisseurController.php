@@ -245,6 +245,7 @@ class EspaceFournisseurController extends Controller
             'est_vedette' => 'boolean',
             'est_nouveau' => 'boolean',
             'caracteristiques' => 'nullable|array',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -258,6 +259,14 @@ class EspaceFournisseurController extends Controller
         $data['slug'] = Str::slug($data['nom']);
         $data['fournisseur_id'] = $user->id;
         $data['seuil_alerte_stock'] = $data['seuil_alerte_stock'] ?? 5;
+
+        // Gérer l'upload d'image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . Str::slug($data['nom']) . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/produits'), $imageName);
+            $data['image_principale'] = '/images/produits/' . $imageName;
+        }
 
         // Déterminer le statut du stock
         if ($data['quantite_stock'] == 0) {
@@ -300,6 +309,7 @@ class EspaceFournisseurController extends Controller
             'est_vedette' => 'boolean',
             'est_nouveau' => 'boolean',
             'caracteristiques' => 'nullable|array',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -312,6 +322,19 @@ class EspaceFournisseurController extends Controller
         $data = $request->all();
         if ($request->has('nom')) {
             $data['slug'] = Str::slug($request->nom);
+        }
+
+        // Gérer l'upload d'image
+        if ($request->hasFile('image')) {
+            // Supprimer l'ancienne image si elle existe
+            if ($produit->image_principale && file_exists(public_path($produit->image_principale))) {
+                unlink(public_path($produit->image_principale));
+            }
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . Str::slug($request->nom ?? $produit->nom) . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/produits'), $imageName);
+            $data['image_principale'] = '/images/produits/' . $imageName;
         }
 
         // Mettre à jour le statut du stock si nécessaire
