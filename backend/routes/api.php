@@ -57,9 +57,11 @@ Route::prefix('v1')->group(function () {
 
         // Order routes (French)
         Route::get('/commandes', [CommandeController::class, 'index']);
+        Route::get('/commandes/historique', [CommandeController::class, 'historique']);
         Route::post('/commandes', [CommandeController::class, 'store']);
         Route::get('/commandes/{id}', [CommandeController::class, 'show']);
         Route::put('/commandes/{id}/statut', [CommandeController::class, 'updateStatus']);
+        Route::post('/commandes/{id}/annuler', [CommandeController::class, 'annuler']);
 
         // Référentiels métier - Accessible aux admins et fournisseurs
         Route::middleware(['role:admin,fournisseur'])->group(function () {

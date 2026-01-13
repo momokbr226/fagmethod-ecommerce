@@ -105,4 +105,79 @@ class Commande extends Model
     {
         return number_format($this->montant_total, 2, ',', ' ') . ' €';
     }
+
+    /**
+     * Générer un numéro de commande unique
+     */
+    public static function genererNumeroCommande()
+    {
+        $date = now()->format('Ymd');
+        $random = strtoupper(substr(md5(uniqid()), 0, 6));
+        return "CMD-{$date}-{$random}";
+    }
+
+    /**
+     * Vérifier si la commande peut être annulée
+     */
+    public function peutEtreAnnulee()
+    {
+        return in_array($this->statut, ['en_attente', 'en_preparation']);
+    }
+
+    /**
+     * Vérifier si la commande est terminée
+     */
+    public function estTerminee()
+    {
+        return in_array($this->statut, ['livre', 'annule']);
+    }
+
+    /**
+     * Vérifier si la commande est payée
+     */
+    public function estPayee()
+    {
+        return $this->statut_paiement === 'paye';
+    }
+
+    /**
+     * Mettre à jour le statut de la commande
+     */
+    public function changerStatut($nouveauStatut)
+    {
+        $statutsValides = ['en_attente', 'en_preparation', 'expedie', 'livre', 'annule'];
+        
+        if (!in_array($nouveauStatut, $statutsValides)) {
+            return false;
+        }
+
+        $this->statut = $nouveauStatut;
+        
+        // Mettre à jour les dates selon le statut
+        if ($nouveauStatut === 'expedie' && !$this->date_expedition) {
+            $this->date_expedition = now();
+        }
+        
+        if ($nouveauStatut === 'livre' && !$this->date_livraison) {
+            $this->date_livraison = now();
+        }
+        
+        return $this->save();
+    }
+
+    /**
+     * Scope pour les commandes récentes
+     */
+    public function scopeRecentes($query, $jours = 30)
+    {
+        return $query->where('created_at', '>=', now()->subDays($jours));
+    }
+
+    /**
+     * Scope pour les commandes en cours
+     */
+    public function scopeEnCours($query)
+    {
+        return $query->whereIn('statut', ['en_attente', 'en_preparation', 'expedie']);
+    }
 }
