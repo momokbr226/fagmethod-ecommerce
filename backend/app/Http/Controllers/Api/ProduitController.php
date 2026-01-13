@@ -13,11 +13,11 @@ class ProduitController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Produit::active()->inStock();
+        $query = Produit::visible()->enStock();
 
         // Filtrage par catégorie
         if ($request->has('categorie_id')) {
-            $query->byCategory($request->categorie_id);
+            $query->parCategorie($request->categorie_id);
         }
 
         // Recherche
@@ -27,7 +27,7 @@ class ProduitController extends Controller
                 $q->where('nom', 'LIKE', "%{$searchTerm}%")
                   ->orWhere('description', 'LIKE', "%{$searchTerm}%")
                   ->orWhere('reference', 'LIKE', "%{$searchTerm}%")
-                  ->orWhere('marque', 'LIKE', "%{$searchTerm}%");
+                  ->orWhere('description_courte', 'LIKE', "%{$searchTerm}%");
             });
         }
 
@@ -58,10 +58,10 @@ class ProduitController extends Controller
 
     public function featured(Request $request): JsonResponse
     {
-        $produits = Produit::active()
-            ->featured()
-            ->inStock()
-            ->with('categorie')
+        $produits = Produit::visible()
+            ->vedette()
+            ->enStock()
+            ->with(['categorie', 'marque'])
             ->take($request->get('limite', 8))
             ->get();
 
@@ -80,16 +80,10 @@ class ProduitController extends Controller
             ], 400);
         }
 
-        $produits = Produit::active()
-            ->inStock()
-            ->where(function ($query) use ($searchTerm) {
-                $query->where('nom', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('description', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('reference', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('marque', 'LIKE', "%{$searchTerm}%")
-                      ->orWhere('modele', 'LIKE', "%{$searchTerm}%");
-            })
-            ->with('categorie')
+        $produits = Produit::visible()
+            ->enStock()
+            ->recherche($searchTerm)
+            ->with(['categorie', 'marque'])
             ->paginate($request->get('limite', 20));
 
         return response()->json([
@@ -99,10 +93,10 @@ class ProduitController extends Controller
 
     public function byCategory(Request $request, $categoryId): JsonResponse
     {
-        $produits = Produit::active()
-            ->inStock()
-            ->byCategory($categoryId)
-            ->with('categorie')
+        $produits = Produit::visible()
+            ->enStock()
+            ->parCategorie($categoryId)
+            ->with(['categorie', 'marque'])
             ->paginate($request->get('par_page', 12));
 
         return response()->json([

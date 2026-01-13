@@ -27,7 +27,7 @@ class CategorieController extends Controller
     {
         $categorie = Categorie::where('slug', $slug)
             ->with(['produits' => function ($query) {
-                $query->active()->inStock()->take(12);
+                $query->visible()->enStock()->take(12);
             }])
             ->firstOrFail();
 
@@ -107,7 +107,7 @@ class CategorieController extends Controller
         $categorie = Categorie::findOrFail($id);
         
         // Vérifier si des sous-catégories existent
-        if ($categorie->sousCategories()->count() > 0) {
+        if ($categorie->enfants()->count() > 0) {
             return response()->json([
                 'message' => 'Impossible de supprimer cette catégorie car elle contient des sous-catégories'
             ], 400);
@@ -124,12 +124,12 @@ class CategorieController extends Controller
     {
         $categories = Categorie::active()
             ->whereHas('produits', function ($query) {
-                $query->where('est_mise_en_avant', true);
+                $query->where('est_vedette', true);
             })
             ->withCount(['produits' => function ($query) {
-                $query->where('est_mise_en_avant', true);
+                $query->where('est_vedette', true);
             }])
-            ->orderBy('ordre_affichage', 'asc')
+            ->orderBy('ordre', 'asc')
             ->get();
 
         return response()->json([
