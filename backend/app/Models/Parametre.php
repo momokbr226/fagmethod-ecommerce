@@ -12,39 +12,31 @@ class Parametre extends Model
     protected $table = 'parametres';
 
     protected $fillable = [
-        'cle_parametre',
-        'valeur_parametre',
+        'cle',
+        'groupe',
+        'libelle',
+        'valeur',
+        'type',
         'description',
-        'type_parametre',
-        'groupe_parametre',
-        'est_public',
+        'ordre',
         'est_modifiable',
-        'utilisateur_id'
+        'est_actif'
     ];
 
     protected $casts = [
-        'est_public' => 'boolean',
         'est_modifiable' => 'boolean',
+        'est_actif' => 'boolean',
+        'ordre' => 'integer',
     ];
 
-    public function utilisateur()
+    public function scopeByGroupe($query, $groupe)
     {
-        return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
+        return $query->where('groupe', $groupe);
     }
 
-    public function scopeByGroup($query, $group)
+    public function scopeActif($query)
     {
-        return $query->where('groupe_parametre', $group);
-    }
-
-    public function scopePublic($query)
-    {
-        return $query->where('est_public', true);
-    }
-
-    public function scopePrivate($query)
-    {
-        return $query->where('est_public', false);
+        return $query->where('est_actif', true);
     }
 
     public function scopeModifiable($query)
@@ -52,17 +44,42 @@ class Parametre extends Model
         return $query->where('est_modifiable', true);
     }
 
+    /**
+     * Retourne la valeur formatée selon le type
+     */
     public function getValeurFormateeAttribute()
     {
-        switch ($this->type_parametre) {
-            case 'nombre':
-                return is_numeric($this->valeur_parametre) ? number_format($this->valeur_parametre, 2, ',', ' ') : $this->valeur_parametre;
-            case 'booleen':
-                return $this->valeur_parametre ? 'Oui' : 'Non';
+        switch ($this->type) {
+            case 'integer':
+                return (int) $this->valeur;
+            case 'boolean':
+                return filter_var($this->valeur, FILTER_VALIDATE_BOOLEAN);
             case 'json':
-                return json_decode($this->valeur_parametre, true);
+                return json_decode($this->valeur, true);
             default:
-                return $this->valeur_parametre;
+                return $this->valeur;
         }
+    }
+
+    /**
+     * Méthode statique pour récupérer une valeur de paramètre
+     */
+    public static function get(string $cle, $default = null)
+    {
+        $parametre = static::where('cle', $cle)->where('est_actif', true)->first();
+        return $parametre ? $parametre->valeur_formatee : $default;
+    }
+
+    /**
+     * Méthode statique pour définir une valeur de paramètre
+     */
+    public static function set(string $cle, $valeur): bool
+    {
+        $parametre = static::where('cle', $cle)->first();
+        if ($parametre && $parametre->est_modifiable) {
+            $parametre->valeur = is_array($valeur) ? json_encode($valeur) : $valeur;
+            return $parametre->save();
+        }
+        return false;
     }
 }

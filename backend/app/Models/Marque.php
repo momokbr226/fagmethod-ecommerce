@@ -6,20 +6,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Categorie extends Model
+class Marque extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'categories';
+    protected $table = 'marques';
 
     protected $fillable = [
         'nom',
         'slug',
         'description',
-        'image',
-        'parent_id',
-        'ordre',
+        'logo',
+        'site_web',
+        'pays_origine',
         'est_active',
+        'ordre',
         'meta_donnees'
     ];
 
@@ -31,17 +32,7 @@ class Categorie extends Model
 
     public function produits()
     {
-        return $this->hasMany(Produit::class, 'categorie_id');
-    }
-
-    public function parent()
-    {
-        return $this->belongsTo(Categorie::class, 'parent_id');
-    }
-
-    public function enfants()
-    {
-        return $this->hasMany(Categorie::class, 'parent_id');
+        return $this->hasMany(Produit::class, 'marque_id');
     }
 
     public function scopeActive($query)
@@ -52,10 +43,5 @@ class Categorie extends Model
     public function scopeOrderByOrder($query)
     {
         return $query->orderBy('ordre', 'asc')->orderBy('nom', 'asc');
-    }
-
-    public function scopeRacine($query)
-    {
-        return $query->whereNull('parent_id');
     }
 }
