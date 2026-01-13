@@ -24,6 +24,7 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->text('meta_titre')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             
             $table->comment('Table des catégories de produits');
         });
