@@ -38,8 +38,21 @@ class PanierController extends Controller
             ]);
         }
 
+        // Calculer les totaux si nécessaire
+        if ($panier->articles->count() > 0) {
+            $panier->calculerTotaux();
+        }
+
         return response()->json([
-            'panier' => $panier
+            'panier' => $panier,
+            'nombre_articles' => $panier->nombre_articles,
+            'resume' => [
+                'sous_total' => $panier->sous_total,
+                'montant_tva' => $panier->montant_tva,
+                'frais_livraison' => $panier->frais_livraison ?? 0,
+                'remise' => $panier->remise ?? 0,
+                'total' => $panier->total
+            ]
         ]);
     }
 
@@ -69,10 +82,17 @@ class PanierController extends Controller
 
         $produit = Produit::findOrFail($request->produit_id);
 
-        // Vérifier si le produit est en stock
-        if ($produit->quantite_stock < $request->quantite) {
+        // Vérifier si le produit est visible et en stock
+        if (!$produit->est_visible) {
             return response()->json([
-                'message' => 'Stock insuffisant pour ce produit'
+                'message' => 'Ce produit n\'est pas disponible'
+            ], 400);
+        }
+
+        if ($produit->gestion_stock && $produit->quantite_stock < $request->quantite) {
+            return response()->json([
+                'message' => 'Stock insuffisant pour ce produit',
+                'stock_disponible' => $produit->quantite_stock
             ], 400);
         }
 
@@ -100,25 +120,27 @@ class PanierController extends Controller
 
             $articleExistant->update([
                 'quantite' => $nouvelleQuantite,
-                'prix_unitaire' => $produit->prix
+                'prix_unitaire' => $produit->prix_actuel,
+                'notes_article' => $request->notes_article ?? $articleExistant->notes_article
             ]);
         } else {
             // Ajouter un nouvel article
             $panier->articles()->create([
                 'produit_id' => $request->produit_id,
                 'quantite' => $request->quantite,
-                'prix_unitaire' => $produit->prix,
+                'prix_unitaire' => $produit->prix_actuel,
                 'attributs_produit' => $request->attributs_produit,
                 'notes_article' => $request->notes_article
             ]);
         }
 
         // Mettre à jour les totaux du panier
-        $panier->updateTotals();
+        $panier->calculerTotaux();
 
         return response()->json([
             'message' => 'Produit ajouté au panier avec succès',
-            'panier' => $panier->fresh()
+            'panier' => $panier->fresh()->load('articles.produit'),
+            'nombre_articles' => $panier->fresh()->nombre_articles
         ]);
     }
 
@@ -157,17 +179,19 @@ class PanierController extends Controller
         $produit = $article->produit;
         $nouvelleQuantite = $request->quantite;
 
-        if ($produit->quantite_stock < $nouvelleQuantite) {
+        if ($produit->gestion_stock && $produit->quantite_stock < $nouvelleQuantite) {
             return response()->json([
-                'message' => 'Stock insuffisant pour cette quantité'
+                'message' => 'Stock insuffisant pour cette quantité',
+                'stock_disponible' => $produit->quantite_stock
             ], 400);
         }
 
         $article->update([
-            'quantite' => $nouvelleQuantite
+            'quantite' => $nouvelleQuantite,
+            'notes_article' => $request->notes_article ?? $article->notes_article
         ]);
 
-        $panier->updateTotals();
+        $panier->calculerTotaux();
 
         return response()->json([
             'message' => 'Article du panier mis à jour avec succès',
@@ -197,7 +221,7 @@ class PanierController extends Controller
 
         $article->delete();
 
-        $panier->updateTotals();
+        $panier->calculerTotaux();
 
         return response()->json([
             'message' => 'Article supprimé du panier avec succès',
@@ -218,12 +242,89 @@ class PanierController extends Controller
         $panier = $user->panier()->first();
         
         if ($panier) {
-            $panier->articles()->delete();
-            $panier->delete();
+            $panier->vider();
         }
 
         return response()->json([
             'message' => 'Panier vidé avec succès'
+        ]);
+    }
+
+    public function appliquerCodePromo(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Utilisateur non authentifié'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'code_promo' => 'required|string|max:50'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'erreurs' => $validator->errors()
+            ], 422);
+        }
+
+        $panier = $user->panier()->first();
+        
+        if (!$panier) {
+            return response()->json([
+                'message' => 'Panier introuvable'
+            ], 404);
+        }
+
+        // TODO: Implémenter la logique de validation du code promo
+        // Pour l'instant, exemple simple avec 10% de réduction
+        $codePromo = strtoupper($request->code_promo);
+        
+        if ($codePromo === 'PROMO10') {
+            $panier->code_promo = $codePromo;
+            $panier->remise = $panier->sous_total * 0.10;
+            $panier->calculerTotaux();
+
+            return response()->json([
+                'message' => 'Code promo appliqué avec succès',
+                'panier' => $panier->fresh()->load('articles.produit'),
+                'remise' => $panier->remise
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Code promo invalide'
+        ], 400);
+    }
+
+    public function retirerCodePromo(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return response()->json([
+                'message' => 'Utilisateur non authentifié'
+            ], 401);
+        }
+
+        $panier = $user->panier()->first();
+        
+        if (!$panier) {
+            return response()->json([
+                'message' => 'Panier introuvable'
+            ], 404);
+        }
+
+        $panier->code_promo = null;
+        $panier->remise = 0;
+        $panier->calculerTotaux();
+
+        return response()->json([
+            'message' => 'Code promo retiré avec succès',
+            'panier' => $panier->fresh()->load('articles.produit')
         ]);
     }
 

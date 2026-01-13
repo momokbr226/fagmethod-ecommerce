@@ -48,14 +48,72 @@ class Panier extends Model
         return number_format($this->total, 2, ',', ' ') . ' €';
     }
 
-    public function updateTotals()
+    public function calculerTotaux()
     {
+        // Charger les articles si pas déjà chargés
+        if (!$this->relationLoaded('articles')) {
+            $this->load('articles');
+        }
+
+        // Calculer le sous-total
         $this->sous_total = $this->articles->sum(function ($article) {
             return $article->prix_unitaire * $article->quantite;
         });
 
-        $this->total = $this->sous_total + $this->frais_livraison - $this->remise;
+        // Calculer la TVA (20% par défaut)
+        $tauxTVA = 0.20;
+        $this->montant_tva = $this->sous_total * $tauxTVA;
+
+        // Calculer le total
+        $this->total = $this->sous_total + $this->montant_tva + ($this->frais_livraison ?? 0) - ($this->remise ?? 0);
         
         $this->save();
+    }
+
+    public function getNombreArticlesAttribute()
+    {
+        return $this->articles->sum('quantite');
+    }
+
+    public function estVide()
+    {
+        return $this->articles->count() === 0;
+    }
+
+    public function vider()
+    {
+        $this->articles()->delete();
+        $this->sous_total = 0;
+        $this->montant_tva = 0;
+        $this->total = 0;
+        $this->remise = 0;
+        $this->code_promo = null;
+        $this->save();
+    }
+
+    public function ajouterProduit($produit, $quantite = 1)
+    {
+        // Vérifier si le produit est déjà dans le panier
+        $articleExistant = $this->articles()->where('produit_id', $produit->id)->first();
+
+        if ($articleExistant) {
+            // Mettre à jour la quantité
+            $articleExistant->quantite += $quantite;
+            $articleExistant->save();
+        } else {
+            // Créer un nouvel article
+            $this->articles()->create([
+                'produit_id' => $produit->id,
+                'quantite' => $quantite,
+                'prix_unitaire' => $produit->prix_actuel,
+            ]);
+        }
+
+        $this->calculerTotaux();
+    }
+
+    public function updateTotals()
+    {
+        $this->calculerTotaux();
     }
 }

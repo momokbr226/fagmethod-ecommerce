@@ -52,6 +52,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('/paniers/{id}', [PanierController::class, 'removeFromCart']);
         Route::delete('/paniers/vider', [PanierController::class, 'clearCart']);
         Route::get('/paniers/count', [PanierController::class, 'getCartCount']);
+        Route::post('/paniers/code-promo', [PanierController::class, 'appliquerCodePromo']);
+        Route::delete('/paniers/code-promo', [PanierController::class, 'retirerCodePromo']);
 
         // Order routes (French)
         Route::get('/commandes', [CommandeController::class, 'index']);
